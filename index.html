@@ -44,10 +44,8 @@ animation:floatUp 7s linear infinite;
 }
 @keyframes floatUp{to{transform:translateY(-100vh)}}
 
-/* Container */
 .container{padding:40px 15px;position:relative;z-index:2}
 
-/* Neon Name */
 .neon{
 font-size:2.3em;
 font-weight:bold;
@@ -64,7 +62,6 @@ from{text-shadow:0 0 5px #fff,0 0 10px #ff4e8a,0 0 20px #ff4e8a}
 to{text-shadow:0 0 15px #fff,0 0 30px #ff9a9e,0 0 60px #ff0844}
 }
 
-/* Glass message */
 .message{
 max-width:95%;
 margin:20px auto;
@@ -74,7 +71,6 @@ border-radius:20px;
 backdrop-filter:blur(10px);
 }
 
-/* Gallery */
 .gallery img{
 width:30%;
 min-width:90px;
@@ -86,7 +82,6 @@ margin:5px;
 border:3px solid white;
 }
 
-/* Heart photo frame */
 .heart-frame{
 position:relative;
 width:180px;
@@ -111,7 +106,6 @@ border-radius:15px;
 100%{transform:translateY(0)}
 }
 
-/* Button */
 button{
 padding:14px 30px;
 border:none;
@@ -122,7 +116,6 @@ font-size:1em;
 box-shadow:0 0 15px white;
 }
 
-/* Countdown */
 #countdownScreen{
 position:fixed;
 top:0;left:0;
@@ -135,13 +128,11 @@ font-size:4em;
 z-index:1000;
 }
 
-/* Surprise */
 #surprise{display:none;margin-top:20px}
 .cake{font-size:70px}
-.flame{font-size:30px;animation:flicker .3s infinite alternate}
+.flame{font-size:30px;animation:flicker .3s infinite alternate;cursor:pointer}
 @keyframes flicker{from{opacity:1}to{opacity:.5}}
 
-/* Fireworks */
 .firework{
 position:fixed;width:8px;height:8px;
 border-radius:50%;
@@ -149,7 +140,6 @@ animation:explode 1s ease-out forwards;
 }
 @keyframes explode{to{transform:scale(12);opacity:0}}
 
-/* Confetti */
 .confetti{
 position:fixed;width:6px;height:12px;
 animation:fall 3s linear forwards;
@@ -191,15 +181,15 @@ Today is all about celebrating the queen of my heart. ❤️
 
 <div id="surprise">
 <div class="cake">🎂</div>
-<div id="flame" class="flame">🕯️</div>
-<p>Blow into the mic to blow the candle 💨</p>
+<div id="flame" class="flame" onclick="blowCandle()">🕯️</div>
+<p>Blow into the mic OR tap candle 💨</p>
 <div id="letter"></div>
 </div>
 
 </div>
 
 <audio id="music" loop>
-<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5a6c7a2f47.mp3?filename=romantic-piano-110624.mp3">
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5a6c7a2f47.mp3">
 </audio>
 
 <script>
@@ -238,15 +228,28 @@ clearInterval(interval);
 
 function startSurprise(){
 document.getElementById("surprise").style.display="block";
-document.getElementById("music").play();
+
+/* FIXED MUSIC */
+let music=document.getElementById("music");
+music.play().catch(()=>{});
+
+/* effects */
 launchFireworks();
 startConfetti();
 startMic();
 typeLetter();
 }
 
+/* fallback manual blow */
+function blowCandle(){
+document.getElementById("flame").style.display="none";
+launchFireworks();
+startConfetti();
+}
+
+/* fireworks */
 function launchFireworks(){
-for(let i=0;i<25;i++){
+for(let i=0;i<20;i++){
 let f=document.createElement("div");
 f.className="firework";
 f.style.left=Math.random()*window.innerWidth+"px";
@@ -257,8 +260,9 @@ setTimeout(()=>f.remove(),1000);
 }
 }
 
+/* confetti */
 function startConfetti(){
-for(let i=0;i<80;i++){
+for(let i=0;i<60;i++){
 let c=document.createElement("div");
 c.className="confetti";
 c.style.left=Math.random()*100+"vw";
@@ -268,37 +272,46 @@ setTimeout(()=>c.remove(),3000);
 }
 }
 
+/* mic detection */
 function startMic(){
 navigator.mediaDevices.getUserMedia({audio:true})
 .then(stream=>{
 let audioContext=new(window.AudioContext||window.webkitAudioContext)();
+audioContext.resume();
+
 let mic=audioContext.createMediaStreamSource(stream);
 let analyser=audioContext.createAnalyser();
 mic.connect(analyser);
 analyser.fftSize=256;
+
 let data=new Uint8Array(analyser.frequencyBinCount);
+
 function detect(){
 analyser.getByteFrequencyData(data);
 let volume=data.reduce((a,b)=>a+b)/data.length;
+
 if(volume>60){
-document.getElementById("flame").style.display="none";
-launchFireworks();
-startConfetti();
+blowCandle();
 }
 requestAnimationFrame(detect);
 }
 detect();
+})
+.catch(()=>{
+console.log("Mic not allowed");
 });
 }
 
+/* typing letter */
 function typeLetter(){
-let text="Happy Birthday bhakk😗😗🎀💗 today is the most special day for me because it's your birthday, its the day the most closest person in my life was born so yeah it's special to me, i just want to sit and write everything but words are never enough to explain how much i feel for you, from the monent you came into my life i started to feel different like yes i got someone to care for, i got someone who cares for me, you are not just my girlfriend you are my bestfriend too with whom i can share every but still will never felt judge for my words. I know you don't think me as of your home but i do still i do coz someday i gave you that place which i think i will never give to so causally to anyone else like you.. huh whatever... You understand me in Ways many felt too and you accepted me just the way i am. You are the most precious person in my life and i thank the universe for bringing you to me.
-Once again happy birthday my love, i hope your day is filled with you laughter, joy, happiness and surprises yet to com3 and I want you to keep smiling and shining like a actual diva;
-Love you malik>3🙆🏼‍♂️🎀💗🫂";
+let text=`Happy Birthday bhakk😗😗🎀💗 ... Love you malik>3🙆🏼‍♂️🎀💗🫂`;
+let el=document.getElementById("letter");
+el.innerHTML="";
 let i=0;
+
 function typing(){
 if(i<text.length){
-document.getElementById("letter").innerHTML+=text.charAt(i);
+el.innerHTML+=text.charAt(i);
 i++;
 setTimeout(typing,40);
 }
